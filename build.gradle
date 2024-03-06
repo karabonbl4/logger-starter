@@ -1,14 +1,22 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.2.3'
-	id 'io.spring.dependency-management' version '1.1.4'
+	id 'org.springframework.boot' version '3.2.3' apply false
+	id 'io.spring.dependency-management' version '1.1.0'
 }
 
 group = 'com.senlainternship'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1'
 
 java {
 	sourceCompatibility = '17'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom SpringBootPlugin.BOM_COORDINATES
+	}
 }
 
 configurations {
@@ -24,6 +32,9 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	compileOnly 'org.projectlombok:lombok'
+	implementation 'org.springframework.kafka:spring-kafka:3.1.1'
+	implementation 'org.springframework.boot:spring-boot-autoconfigure-processor:3.2.3'
+	implementation 'org.aspectj:aspectjweaver:1.9.21.1'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

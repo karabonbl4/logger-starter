@@ -1,0 +1,5 @@
+spring:
+  kafka:
+    topic:
+      message: 'kafka.library.message'
+      exception: 'kafka.library.exception'
