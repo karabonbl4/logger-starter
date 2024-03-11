@@ -3,16 +3,17 @@ package com.senlainternship.logger.model;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.aspectj.lang.JoinPoint;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
-import static com.senlainternship.logger.model.KafkaLoggerConstant.DATE_TIME_FORMATTER;
 
 @Getter
 @Setter
 @ToString
 public class LogMessage {
+
+    private final static DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss");
 
     private String time;
 
@@ -22,10 +23,10 @@ public class LogMessage {
 
     private String body;
 
-    public static LogMessage of(JoinPoint joinPoint, String body, String type) {
+    public static LogMessage of(String executor, String body, String type) {
         LogMessage logMessage = new LogMessage();
-        logMessage.setTime(LocalDateTime.now().format(DATE_TIME_FORMATTER));
-        logMessage.setExecutor(joinPoint.getStaticPart().getSignature().toString());
+        logMessage.setTime(LocalDateTime.now().format(format));
+        logMessage.setExecutor(executor);
         logMessage.setType(type);
         logMessage.setBody(body);
         return logMessage;
