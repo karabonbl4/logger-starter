@@ -14,12 +14,16 @@ import org.aspectj.lang.annotation.Pointcut;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static com.senlainternship.logger.model.KafkaLoggerConstant.*;
-
 @Aspect
 @Slf4j
 @RequiredArgsConstructor
 public class KafkaRestControllerLogger {
+
+    public static final String ARGS = "ARGS";
+
+    public static final String RETURNS = "RETURNS";
+
+    public static final String WARNING = "WARNING";
 
     private final KafkaProducer kafkaProducer;
 
@@ -34,17 +38,19 @@ public class KafkaRestControllerLogger {
     @Before("callAtBookControllerPublic()")
     public void sendRequiredArguments(JoinPoint joinPoint) {
         String name = Arrays.stream(joinPoint.getArgs()).map(arg -> arg.getClass().getSimpleName() + ": " + arg).collect(Collectors.joining(", "));
-        LogMessage logMessage = LogMessage.of(joinPoint, name, ARGS);
+        String executor = joinPoint.getStaticPart().getSignature().toString();
+        LogMessage logMessage = LogMessage.of(executor, name, ARGS);
         log.debug(logMessage.toString());
-        this.convertAndSend(logMessage);
+        this.sendMessage(logMessage);
     }
 
     @AfterReturning(pointcut = "callAtBookControllerPublic()", returning = "retVal")
     public void sendMessage(JoinPoint joinPoint, Object retVal) {
         String s = retVal.toString();
-        LogMessage logMessage = LogMessage.of(joinPoint, s, RETURNS);
+        String executor = joinPoint.getStaticPart().getSignature().toString();
+        LogMessage logMessage = LogMessage.of(executor, s, RETURNS);
         log.debug(logMessage.toString());
-        this.convertAndSend(logMessage);
+        this.sendMessage(logMessage);
     }
 
     @AfterReturning("callAtExceptionHandlerPublic()")
@@ -53,13 +59,13 @@ public class KafkaRestControllerLogger {
                 .findFirst()
                 .map(src -> ((Exception) src).getMessage())
                 .orElse("Unknown exception!");
-
-        LogMessage logMessage = LogMessage.of(joinPoint, eMessage, WARNING);
+        String executor = joinPoint.getStaticPart().getSignature().toString();
+        LogMessage logMessage = LogMessage.of(executor, eMessage, WARNING);
         log.debug(logMessage.toString());
-        this.convertAndSend(logMessage);
+        this.sendMessage(logMessage);
     }
 
-    private void convertAndSend(LogMessage message) {
+    private void sendMessage(LogMessage message) {
         if (message.getType().equals(WARNING)) {
             kafkaProducer.sendException(message);
         } else {
